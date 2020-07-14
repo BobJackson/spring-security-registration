@@ -1,10 +1,14 @@
 package com.wangyousong.selfstudy.springsecurity.registration.service;
 
+import com.wangyousong.selfstudy.springsecurity.registration.persistence.dao.RoleRepository;
 import com.wangyousong.selfstudy.springsecurity.registration.persistence.dao.UserRepository;
 import com.wangyousong.selfstudy.springsecurity.registration.persistence.model.User;
 import com.wangyousong.selfstudy.springsecurity.registration.web.dto.UserDto;
 import com.wangyousong.selfstudy.springsecurity.registration.web.error.UserAlreadyExistException;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
+
+import java.util.Collections;
 
 /**
  * @author Bob
@@ -15,9 +19,13 @@ import org.springframework.stereotype.Service;
 public class UserServiceImpl implements IUserService {
 
     private final UserRepository userRepository;
+    private final RoleRepository roleRepository;
+    private final PasswordEncoder passwordEncoder;
 
-    public UserServiceImpl(UserRepository userRepository) {
+    public UserServiceImpl(UserRepository userRepository, RoleRepository roleRepository, PasswordEncoder passwordEncoder) {
         this.userRepository = userRepository;
+        this.roleRepository = roleRepository;
+        this.passwordEncoder = passwordEncoder;
     }
 
     @Override
@@ -28,7 +36,8 @@ public class UserServiceImpl implements IUserService {
         final User user = new User();
         user.setFirstName(accountDto.getFirstName());
         user.setLastName(accountDto.getLastName());
-        user.setPassword(accountDto.getPassword());
+        user.setPassword(passwordEncoder.encode(accountDto.getPassword()));
+        user.setRoles(Collections.singletonList(roleRepository.findByName("ROLE_USER")));
         user.setEmail(accountDto.getEmail());
 
         return userRepository.save(user);

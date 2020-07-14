@@ -1,6 +1,5 @@
 package com.wangyousong.selfstudy.springsecurity.registration.web.config;
 
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.MessageSource;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -45,6 +44,9 @@ public class MvcConfig implements WebMvcConfigurer{
     @Override
     public void addViewControllers(final ViewControllerRegistry registry) {
         registry.addViewController("/successRegister.html");
+        registry.addViewController("/login");
+        registry.addViewController("/registration.html");
+        registry.addViewController("/homepage.html");
     }
 
 }
