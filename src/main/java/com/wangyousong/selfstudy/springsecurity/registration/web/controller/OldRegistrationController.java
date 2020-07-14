@@ -3,7 +3,6 @@ package com.wangyousong.selfstudy.springsecurity.registration.web.controller;
 import com.wangyousong.selfstudy.springsecurity.registration.service.IUserService;
 import com.wangyousong.selfstudy.springsecurity.registration.web.dto.UserDto;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.context.MessageSource;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -12,8 +11,6 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.servlet.ModelAndView;
 
-import javax.annotation.Resource;
-import javax.servlet.http.HttpServletRequest;
 import javax.validation.Valid;
 
 /**
@@ -28,9 +25,6 @@ public class OldRegistrationController {
 
     private final IUserService userService;
 
-    @Resource
-    private MessageSource messages;
-
     public OldRegistrationController(IUserService userService) {
         this.userService = userService;
     }
@@ -44,7 +38,7 @@ public class OldRegistrationController {
     }
 
     @PostMapping("/user/registration")
-    public ModelAndView registerUserAccount(@ModelAttribute("user") @Valid final UserDto userDto, final HttpServletRequest request) {
+    public ModelAndView registerUserAccount(@ModelAttribute("user") @Valid final UserDto userDto) {
         log.debug("Registering user account with information: {}", userDto);
         userService.registerNewUserAccount(userDto);
         return new ModelAndView("successRegister", "user", userDto);
