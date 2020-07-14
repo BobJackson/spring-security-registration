@@ -1,6 +1,8 @@
 package com.wangyousong.selfstudy.springsecurity.registration.web.dto;
 
 
+import com.wangyousong.selfstudy.springsecurity.registration.validation.ValidEmail;
+import com.wangyousong.selfstudy.springsecurity.registration.validation.ValidPassword;
 import lombok.Data;
 
 import javax.validation.constraints.NotNull;
@@ -21,12 +23,14 @@ public class UserDto {
     @Size(min = 1, message = "{Size.userDto.lastName}")
     private String lastName;
 
+    @ValidPassword
     private String password;
 
     @NotNull
     @Size(min = 1)
     private String matchingPassword;
 
+    @ValidEmail
     @NotNull
     @Size(min = 1, message = "{Size.userDto.email}")
     private String email;
