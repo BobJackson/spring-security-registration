@@ -1,17 +1,23 @@
 package com.wangyousong.selfstudy.springsecurity.registration.web.controller;
 
+import com.wangyousong.selfstudy.springsecurity.registration.persistence.model.User;
+import com.wangyousong.selfstudy.springsecurity.registration.persistence.model.VerificationToken;
+import com.wangyousong.selfstudy.springsecurity.registration.registration.OnRegistrationCompleteEvent;
 import com.wangyousong.selfstudy.springsecurity.registration.service.IUserService;
 import com.wangyousong.selfstudy.springsecurity.registration.web.dto.UserDto;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.context.ApplicationEventPublisher;
+import org.springframework.context.MessageSource;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.ModelAttribute;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.*;
 import org.springframework.web.servlet.ModelAndView;
 
+import javax.annotation.Resource;
+import javax.servlet.http.HttpServletRequest;
 import javax.validation.Valid;
+import java.util.Calendar;
+import java.util.Locale;
 
 /**
  * @author Bob
@@ -23,10 +29,15 @@ import javax.validation.Valid;
 @Slf4j
 public class OldRegistrationController {
 
-    private final IUserService userService;
+    @Resource
+    private MessageSource messages;
 
-    public OldRegistrationController(IUserService userService) {
+    private final IUserService userService;
+    private final ApplicationEventPublisher eventPublisher;
+
+    public OldRegistrationController(IUserService userService, ApplicationEventPublisher eventPublisher) {
         this.userService = userService;
+        this.eventPublisher = eventPublisher;
     }
 
     @GetMapping("/user/registration")
@@ -38,9 +49,38 @@ public class OldRegistrationController {
     }
 
     @PostMapping("/user/registration")
-    public ModelAndView registerUserAccount(@ModelAttribute("user") @Valid final UserDto userDto) {
+    public ModelAndView registerUserAccount(@ModelAttribute("user") @Valid final UserDto userDto, HttpServletRequest request) {
         log.debug("Registering user account with information: {}", userDto);
-        userService.registerNewUserAccount(userDto);
+        User user = userService.registerNewUserAccount(userDto);
+        String appUrl = request.getContextPath();
+        eventPublisher.publishEvent(new OnRegistrationCompleteEvent(this, appUrl,
+                request.getLocale(), user));
         return new ModelAndView("successRegister", "user", userDto);
+    }
+
+    @GetMapping("/registrationConfirm")
+    public String confirmRegistration(final HttpServletRequest request, final Model model, @RequestParam("token") final String token) {
+        final Locale locale = request.getLocale();
+
+        final VerificationToken verificationToken = userService.getVerificationToken(token);
+        if (verificationToken == null) {
+            final String message = messages.getMessage("auth.message.invalidToken", null, locale);
+            model.addAttribute("message", message);
+            return "redirect:/badUser.html?lang=" + locale.getLanguage();
+        }
+
+        final User user = verificationToken.getUser();
+        final Calendar cal = Calendar.getInstance();
+        if ((verificationToken.getExpiryDate().getTime() - cal.getTime().getTime()) <= 0) {
+            model.addAttribute("message", messages.getMessage("auth.message.expired", null, locale));
+            model.addAttribute("expired", true);
+            model.addAttribute("token", token);
+            return "redirect:/badUser.html?lang=" + locale.getLanguage();
+        }
+
+        user.setEnabled(true);
+        userService.saveRegisteredUser(user);
+        model.addAttribute("message", messages.getMessage("message.accountVerified", null, locale));
+        return "redirect:/login?lang=" + locale.getLanguage();
     }
 }

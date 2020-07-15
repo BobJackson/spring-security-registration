@@ -1,0 +1,9 @@
+{
+  "properties": [
+    {
+      "name": "support.email",
+      "type": "java.lang.String",
+      "description": "Description for support.email."
+    }
+  ]
+}

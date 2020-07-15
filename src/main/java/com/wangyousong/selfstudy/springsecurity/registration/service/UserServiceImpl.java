@@ -2,7 +2,9 @@ package com.wangyousong.selfstudy.springsecurity.registration.service;
 
 import com.wangyousong.selfstudy.springsecurity.registration.persistence.dao.RoleRepository;
 import com.wangyousong.selfstudy.springsecurity.registration.persistence.dao.UserRepository;
+import com.wangyousong.selfstudy.springsecurity.registration.persistence.dao.VerificationTokenRepository;
 import com.wangyousong.selfstudy.springsecurity.registration.persistence.model.User;
+import com.wangyousong.selfstudy.springsecurity.registration.persistence.model.VerificationToken;
 import com.wangyousong.selfstudy.springsecurity.registration.web.dto.UserDto;
 import com.wangyousong.selfstudy.springsecurity.registration.web.error.UserAlreadyExistException;
 import org.springframework.security.crypto.password.PasswordEncoder;
@@ -21,11 +23,14 @@ public class UserServiceImpl implements IUserService {
     private final UserRepository userRepository;
     private final RoleRepository roleRepository;
     private final PasswordEncoder passwordEncoder;
+    private final VerificationTokenRepository tokenRepository;
 
-    public UserServiceImpl(UserRepository userRepository, RoleRepository roleRepository, PasswordEncoder passwordEncoder) {
+    public UserServiceImpl(UserRepository userRepository, RoleRepository roleRepository,
+                           PasswordEncoder passwordEncoder, VerificationTokenRepository tokenRepository) {
         this.userRepository = userRepository;
         this.roleRepository = roleRepository;
         this.passwordEncoder = passwordEncoder;
+        this.tokenRepository = tokenRepository;
     }
 
     @Override
@@ -45,5 +50,21 @@ public class UserServiceImpl implements IUserService {
 
     private boolean emailExists(final String email) {
         return userRepository.findByEmail(email).isPresent();
+    }
+
+    @Override
+    public void createVerificationTokenForUser(User user, String token) {
+        final VerificationToken myToken = new VerificationToken(token, user);
+        tokenRepository.save(myToken);
+    }
+
+    @Override
+    public VerificationToken getVerificationToken(String token) {
+        return tokenRepository.findByToken(token).orElse(null);
+    }
+
+    @Override
+    public void saveRegisteredUser(User user) {
+        userRepository.save(user);
     }
 }

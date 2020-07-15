@@ -16,3 +16,21 @@ spring:
         enable_lazy_load_no_trans: true
   messages:
     basename: static/i18n/messages
+  mail:
+    host: smtp.163.com
+    port: 465
+    protocol: smtps
+    username: hfuucmms@163.com
+    password: PWHTYZBOLBDFGAKR
+    properties:
+      mail:
+        transport:
+          protocol: smtps
+        smtps:
+          auth: true
+          starttls:
+            enable: true
+          timeout: 8000
+
+support:
+  email: hfuucmms@163.com
