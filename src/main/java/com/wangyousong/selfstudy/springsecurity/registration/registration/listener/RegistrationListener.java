@@ -60,6 +60,7 @@ public class RegistrationListener implements ApplicationListener<OnRegistrationC
                                                     final String token) {
         final String recipientAddress = user.getEmail();
         final String subject = "Registration Confirmation";
+        // if you want the link to be clicked , you need to use label  <a href="" ></a> to wrap.
         final String confirmationUrl = event.getAppUrl() + "/registrationConfirm?token=" + token;
         final String message = messages.getMessage("message.regSuccLink",
                 null,
