@@ -1,8 +1,10 @@
 package com.wangyousong.selfstudy.springsecurity.registration.service;
 
+import com.wangyousong.selfstudy.springsecurity.registration.persistence.dao.PasswordResetTokenRepository;
 import com.wangyousong.selfstudy.springsecurity.registration.persistence.dao.RoleRepository;
 import com.wangyousong.selfstudy.springsecurity.registration.persistence.dao.UserRepository;
 import com.wangyousong.selfstudy.springsecurity.registration.persistence.dao.VerificationTokenRepository;
+import com.wangyousong.selfstudy.springsecurity.registration.persistence.model.PasswordResetToken;
 import com.wangyousong.selfstudy.springsecurity.registration.persistence.model.User;
 import com.wangyousong.selfstudy.springsecurity.registration.persistence.model.VerificationToken;
 import com.wangyousong.selfstudy.springsecurity.registration.web.dto.UserDto;
@@ -26,13 +28,16 @@ public class UserServiceImpl implements IUserService {
     private final RoleRepository roleRepository;
     private final PasswordEncoder passwordEncoder;
     private final VerificationTokenRepository tokenRepository;
+    private final PasswordResetTokenRepository passwordTokenRepository;
 
     public UserServiceImpl(UserRepository userRepository, RoleRepository roleRepository,
-                           PasswordEncoder passwordEncoder, VerificationTokenRepository tokenRepository) {
+                           PasswordEncoder passwordEncoder, VerificationTokenRepository tokenRepository,
+                           PasswordResetTokenRepository passwordTokenRepository) {
         this.userRepository = userRepository;
         this.roleRepository = roleRepository;
         this.passwordEncoder = passwordEncoder;
         this.tokenRepository = tokenRepository;
+        this.passwordTokenRepository = passwordTokenRepository;
     }
 
     @Override
@@ -84,5 +89,27 @@ public class UserServiceImpl implements IUserService {
         }
         vToken.get().updateToken(UUID.randomUUID().toString());
         return tokenRepository.save(vToken.get());
+    }
+
+    @Override
+    public User findUserByEmail(String userEmail) {
+        return userRepository.findByEmail(userEmail).orElse(null);
+    }
+
+    @Override
+    public void createPasswordResetTokenForUser(User user, String token) {
+        final PasswordResetToken myToken = new PasswordResetToken(token, user);
+        passwordTokenRepository.save(myToken);
+    }
+
+    @Override
+    public PasswordResetToken getPasswordResetToken(String token) {
+        return passwordTokenRepository.findByToken(token).orElse(null);
+    }
+
+    @Override
+    public void changeUserPassword(User user, String password) {
+        user.setPassword(passwordEncoder.encode(password));
+        userRepository.save(user);
     }
 }

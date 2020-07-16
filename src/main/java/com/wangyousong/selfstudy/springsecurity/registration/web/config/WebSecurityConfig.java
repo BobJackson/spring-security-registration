@@ -39,11 +39,13 @@ public class WebSecurityConfig extends WebSecurityConfigurerAdapter {
         http
                 .csrf().disable()
                 .authorizeRequests()
-                .antMatchers("/login*", "/logout*", "/signin/**", "/signup/**", "/customLogin", "/old/registrationConfirm",
+                .antMatchers("/login*", "/logout*", "/signin/**", "/signup/**", "/customLogin",
+                        "/old/user/registration*", "/old/registrationConfirm",
                         "/old/user/resendRegistrationToken",
+                        "/old/user/resetPassword*", "/old/user/changePassword*", "/old/user/savePassword",
                         "/user/registration*", "/user/registration*", "/registrationConfirm*", "/expiredAccount*", "/registration*",
                         "/badUser*", "/user/resendRegistrationToken*", "/forgetPassword*", "/user/resetPassword*", "/user/savePassword*", "/updatePassword*",
-                        "/user/changePassword*", "/emailError*", "/resources/**", "/old/user/registration*", "/successRegister*", "/qrcode*", "/user/enableNewLoc*").permitAll()
+                        "/user/changePassword*", "/emailError*", "/resources/**", "/successRegister*", "/qrcode*", "/user/enableNewLoc*").permitAll()
                 .antMatchers("/invalidSession*").anonymous()
                 .antMatchers("/user/updatePassword*").hasAuthority("CHANGE_PASSWORD_PRIVILEGE")
                 .anyRequest().hasAuthority("READ_PRIVILEGE")

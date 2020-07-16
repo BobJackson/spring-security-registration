@@ -1,5 +1,6 @@
 package com.wangyousong.selfstudy.springsecurity.registration.service;
 
+import com.wangyousong.selfstudy.springsecurity.registration.persistence.model.PasswordResetToken;
 import com.wangyousong.selfstudy.springsecurity.registration.persistence.model.User;
 import com.wangyousong.selfstudy.springsecurity.registration.persistence.model.VerificationToken;
 import com.wangyousong.selfstudy.springsecurity.registration.web.dto.UserDto;
@@ -57,4 +58,36 @@ public interface IUserService {
      * @return a new VerificationToken
      */
     VerificationToken updateVerificationTokenForUser(User user, String token);
+
+    /**
+     * findUserByEmail
+     *
+     * @param userEmail userEmail
+     * @return User
+     */
+    User findUserByEmail(String userEmail);
+
+    /**
+     * create PasswordResetToken for user
+     *
+     * @param user  user
+     * @param token token
+     */
+    void createPasswordResetTokenForUser(User user, String token);
+
+    /**
+     * getPasswordResetToken from token
+     *
+     * @param token token
+     * @return PasswordResetToken
+     */
+    PasswordResetToken getPasswordResetToken(String token);
+
+    /**
+     * change user password
+     *
+     * @param user     user
+     * @param password password
+     */
+    void changeUserPassword(User user, String password);
 }
