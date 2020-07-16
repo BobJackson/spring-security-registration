@@ -66,7 +66,8 @@ public class OldRegistrationController {
         if (verificationToken == null) {
             final String message = messages.getMessage("auth.message.invalidToken", null, locale);
             model.addAttribute("message", message);
-            return "redirect:/badUser.html?lang=" + locale.getLanguage();
+            return "redirect:/badUser.html?lang=" + locale.getLanguage() + "&message="
+                    + model.getAttribute("message");
         }
 
         final User user = verificationToken.getUser();
@@ -75,12 +76,35 @@ public class OldRegistrationController {
             model.addAttribute("message", messages.getMessage("auth.message.expired", null, locale));
             model.addAttribute("expired", true);
             model.addAttribute("token", token);
-            return "redirect:/badUser.html?lang=" + locale.getLanguage();
+
+            return "redirect:/badUser.html?lang=" + locale.getLanguage() + "&message="
+                    + model.getAttribute("message")
+                    + "&expired=" + model.getAttribute("expired")
+                    + "&token=" + model.getAttribute("token");
         }
 
         user.setEnabled(true);
         userService.saveRegisteredUser(user);
         model.addAttribute("message", messages.getMessage("message.accountVerified", null, locale));
-        return "redirect:/login?lang=" + locale.getLanguage();
+        return "redirect:/login?lang=" + locale.getLanguage() + "&message="
+                + model.getAttribute("message");
     }
+
+
+    @GetMapping("/user/resendRegistrationToken")
+    public String resendRegistrationToken(final HttpServletRequest request, final Model model,
+                                          @RequestParam("token") final String existingToken) {
+        final Locale locale = request.getLocale();
+        final User user = userService.getUser(existingToken);
+
+        final String appUrl = "http://" + request.getServerName() + ":" + request.getServerPort()
+                + request.getContextPath() + "/old";
+        eventPublisher.publishEvent(new OnRegistrationCompleteEvent(this, appUrl,
+                request.getLocale(), user, existingToken));
+
+        model.addAttribute("message", messages.getMessage("message.resendToken", null, locale));
+        return "redirect:/login?lang=" + locale.getLanguage() + "&message="
+                + model.getAttribute("message");
+    }
+
 }

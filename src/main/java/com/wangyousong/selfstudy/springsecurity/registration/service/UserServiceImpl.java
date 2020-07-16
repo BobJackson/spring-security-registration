@@ -11,6 +11,8 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
 import java.util.Collections;
+import java.util.Optional;
+import java.util.UUID;
 
 /**
  * @author Bob
@@ -66,5 +68,21 @@ public class UserServiceImpl implements IUserService {
     @Override
     public void saveRegisteredUser(User user) {
         userRepository.save(user);
+    }
+
+    @Override
+    public User getUser(String existingToken) {
+        Optional<VerificationToken> token = tokenRepository.findByToken(existingToken);
+        return token.map(VerificationToken::getUser).orElse(null);
+    }
+
+    @Override
+    public VerificationToken updateVerificationTokenForUser(User user, String token) {
+        Optional<VerificationToken> vToken = tokenRepository.findByToken(token);
+        if (vToken.isEmpty()) {
+            throw new IllegalArgumentException("Invalid token ->" + token);
+        }
+        vToken.get().updateToken(UUID.randomUUID().toString());
+        return tokenRepository.save(vToken.get());
     }
 }

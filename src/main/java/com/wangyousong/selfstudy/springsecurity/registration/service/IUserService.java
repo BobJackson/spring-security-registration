@@ -40,4 +40,21 @@ public interface IUserService {
      * @param user user
      */
     void saveRegisteredUser(User user);
+
+    /**
+     * getUser by existingToken
+     *
+     * @param existingToken existingToken
+     * @return User
+     */
+    User getUser(String existingToken);
+
+    /**
+     * update verification token for user
+     *
+     * @param user  user
+     * @param token token
+     * @return a new VerificationToken
+     */
+    VerificationToken updateVerificationTokenForUser(User user, String token);
 }

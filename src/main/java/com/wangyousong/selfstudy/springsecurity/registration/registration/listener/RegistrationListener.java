@@ -2,8 +2,10 @@ package com.wangyousong.selfstudy.springsecurity.registration.registration.liste
 
 
 import com.wangyousong.selfstudy.springsecurity.registration.persistence.model.User;
+import com.wangyousong.selfstudy.springsecurity.registration.persistence.model.VerificationToken;
 import com.wangyousong.selfstudy.springsecurity.registration.registration.OnRegistrationCompleteEvent;
 import com.wangyousong.selfstudy.springsecurity.registration.service.IUserService;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.context.ApplicationListener;
 import org.springframework.context.MessageSource;
 import org.springframework.core.env.Environment;
@@ -21,6 +23,7 @@ import java.util.UUID;
  * @date 2020/7/15 14:56
  */
 @Component
+@Slf4j
 public class RegistrationListener implements ApplicationListener<OnRegistrationCompleteEvent> {
 
     private final IUserService service;
@@ -47,11 +50,18 @@ public class RegistrationListener implements ApplicationListener<OnRegistrationC
 
     private void confirmRegistration(final OnRegistrationCompleteEvent event) {
         final User user = event.getUser();
-        final String token = UUID.randomUUID().toString();
-        service.createVerificationTokenForUser(user, token);
+        String token;
+        if (Objects.isNull(event.getToken())) {
+            token = UUID.randomUUID().toString();
+            service.createVerificationTokenForUser(user, token);
+        } else {
+            VerificationToken verificationToken = service.updateVerificationTokenForUser(user, event.getToken());
+            token = verificationToken.getToken();
+        }
 
         final SimpleMailMessage email = constructEmailMessage(event, user, token);
         mailSender.send(email);
+        log.info("send an email...");
     }
 
     //
