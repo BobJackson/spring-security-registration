@@ -10,6 +10,7 @@ import org.springframework.security.config.annotation.web.configuration.WebSecur
 import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
+import org.springframework.security.web.authentication.AuthenticationSuccessHandler;
 
 import javax.annotation.Resource;
 
@@ -27,9 +28,12 @@ public class WebSecurityConfig extends WebSecurityConfigurerAdapter {
     @Resource
     private CustomAuthenticationFailureHandler authenticationFailureHandler;
 
+    @Resource
+    private AuthenticationSuccessHandler myAuthenticationSuccessHandler;
+
 
     @Override
-    public void configure(final WebSecurity web) throws Exception {
+    public void configure(final WebSecurity web) {
         web.ignoring().antMatchers("/resources/**");
     }
 
@@ -46,26 +50,28 @@ public class WebSecurityConfig extends WebSecurityConfigurerAdapter {
                         "/user/registration*", "/user/registration*", "/registrationConfirm*", "/expiredAccount*", "/registration*",
                         "/badUser*", "/user/resendRegistrationToken*", "/forgetPassword*", "/user/resetPassword*", "/user/savePassword*", "/updatePassword*",
                         "/user/changePassword*", "/emailError*", "/resources/**", "/successRegister*", "/qrcode*", "/user/enableNewLoc*").permitAll()
+                .antMatchers("/foos/**").hasIpAddress("11.11.11.11")
                 .antMatchers("/invalidSession*").anonymous()
                 .antMatchers("/user/updatePassword*").hasAuthority("CHANGE_PASSWORD_PRIVILEGE")
                 .anyRequest().hasAuthority("READ_PRIVILEGE")
                 .and()
                 .formLogin()
-                .loginPage("/login")
-                .defaultSuccessUrl("/homepage.html")
-                .failureUrl("/login?error=true")
-                .failureHandler(authenticationFailureHandler)
-                .permitAll()
+                    .loginPage("/login")
+                    .defaultSuccessUrl("/homepage.html")
+                    .failureUrl("/login?error=true")
+                    .successHandler(myAuthenticationSuccessHandler)
+                    .failureHandler(authenticationFailureHandler)
+                    .permitAll()
                 .and()
                 .sessionManagement()
-                .invalidSessionUrl("/invalidSession.html")
-                .sessionFixation().none()
+                    .invalidSessionUrl("/invalidSession.html")
+                    .sessionFixation().none()
                 .and()
                 .logout()
-                .invalidateHttpSession(false)
-                .logoutSuccessUrl("/logout.html?logSucc=true")
-                .deleteCookies("JSESSIONID")
-                .permitAll()
+                    .invalidateHttpSession(false)
+                    .logoutSuccessUrl("/logout.html?logSucc=true")
+                    .deleteCookies("JSESSIONID")
+                    .permitAll()
                 .and()
                 .headers().frameOptions().disable(); // this is needed to access the H2 db's console
 
