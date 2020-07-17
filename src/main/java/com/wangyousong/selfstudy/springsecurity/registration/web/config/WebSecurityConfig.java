@@ -1,8 +1,10 @@
 package com.wangyousong.selfstudy.springsecurity.registration.web.config;
 
 import com.wangyousong.selfstudy.springsecurity.registration.security.CustomAuthenticationFailureHandler;
+import com.wangyousong.selfstudy.springsecurity.registration.security.CustomRememberMeServices;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.security.authentication.dao.DaoAuthenticationProvider;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.builders.WebSecurity;
@@ -11,6 +13,8 @@ import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.web.authentication.AuthenticationSuccessHandler;
+import org.springframework.security.web.authentication.RememberMeServices;
+import org.springframework.security.web.authentication.rememberme.JdbcTokenRepositoryImpl;
 
 import javax.annotation.Resource;
 
@@ -30,6 +34,9 @@ public class WebSecurityConfig extends WebSecurityConfigurerAdapter {
 
     @Resource
     private AuthenticationSuccessHandler myAuthenticationSuccessHandler;
+
+    @Resource
+    private JdbcTemplate jdbcTemplate;
 
 
     @Override
@@ -56,8 +63,8 @@ public class WebSecurityConfig extends WebSecurityConfigurerAdapter {
                 .anyRequest().hasAuthority("READ_PRIVILEGE")
                 .and()
                 .formLogin()
-                    .loginPage("/login")
-                    .defaultSuccessUrl("/homepage.html")
+                .loginPage("/login")
+                .defaultSuccessUrl("/homepage.html")
                 .failureUrl("/login?error=true")
                 .successHandler(myAuthenticationSuccessHandler)
                 .failureHandler(authenticationFailureHandler)
@@ -69,14 +76,28 @@ public class WebSecurityConfig extends WebSecurityConfigurerAdapter {
                 .and()
                 .logout()
                 .invalidateHttpSession(true)
-                    .logoutSuccessUrl("/logout.html?logSucc=true")
-                    .deleteCookies("JSESSIONID")
-                    .permitAll()
+                .logoutSuccessUrl("/logout.html?logSucc=true")
+                .deleteCookies("JSESSIONID")
+                .permitAll()
                 .and()
-                .headers().frameOptions().disable(); // this is needed to access the H2 db's console
+                .rememberMe().rememberMeServices(rememberMeServices()).key("theKey")
+                .and().headers().frameOptions().disable(); // this is needed to access the H2 db's console
 
         // @formatter:on
     }
+
+    @Bean
+    public RememberMeServices rememberMeServices() {
+        return new CustomRememberMeServices("theKey", userDetailsService, jdbcTokenRepositoryImpl());
+    }
+
+    @Bean
+    public JdbcTokenRepositoryImpl jdbcTokenRepositoryImpl() {
+        JdbcTokenRepositoryImpl jdbcTokenRepository = new JdbcTokenRepositoryImpl();
+        jdbcTokenRepository.setJdbcTemplate(jdbcTemplate);
+        return jdbcTokenRepository;
+    }
+
 
     @Bean
     public DaoAuthenticationProvider authProvider() {
