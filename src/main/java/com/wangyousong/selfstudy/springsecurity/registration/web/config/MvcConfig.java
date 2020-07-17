@@ -6,9 +6,11 @@ import org.springframework.context.annotation.Configuration;
 import org.springframework.validation.Validator;
 import org.springframework.validation.beanvalidation.LocalValidatorFactoryBean;
 import org.springframework.web.servlet.LocaleResolver;
+import org.springframework.web.servlet.config.annotation.InterceptorRegistry;
 import org.springframework.web.servlet.config.annotation.ViewControllerRegistry;
 import org.springframework.web.servlet.config.annotation.WebMvcConfigurer;
 import org.springframework.web.servlet.i18n.CookieLocaleResolver;
+import org.springframework.web.servlet.i18n.LocaleChangeInterceptor;
 
 import java.util.Locale;
 
@@ -18,7 +20,7 @@ import java.util.Locale;
  * @date 2020/7/14 19:44
  */
 @Configuration
-public class MvcConfig implements WebMvcConfigurer{
+public class MvcConfig implements WebMvcConfigurer {
 
     private final MessageSource messageSource;
 
@@ -26,6 +28,13 @@ public class MvcConfig implements WebMvcConfigurer{
         this.messageSource = messageSource;
     }
 
+
+    @Override
+    public void addInterceptors(InterceptorRegistry registry) {
+        LocaleChangeInterceptor localeChangeInterceptor = new LocaleChangeInterceptor();
+        localeChangeInterceptor.setParamName("lang");
+        registry.addInterceptor(localeChangeInterceptor);
+    }
 
     @Bean
     public LocaleResolver localeResolver() {
@@ -51,6 +60,9 @@ public class MvcConfig implements WebMvcConfigurer{
         registry.addViewController("/emailError.html");
         registry.addViewController("/forgetPassword.html");
         registry.addViewController("/updatePassword.html");
+        registry.addViewController("/logout.html");
+        registry.addViewController("/home.html");
+        registry.addViewController("/invalidSession.html");
     }
 
 }
