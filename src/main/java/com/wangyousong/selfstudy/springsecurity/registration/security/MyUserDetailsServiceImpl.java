@@ -12,6 +12,8 @@ import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.stereotype.Service;
 
+import javax.annotation.Resource;
+import javax.servlet.http.HttpServletRequest;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
@@ -23,12 +25,16 @@ import java.util.Optional;
 @Service("userDetailsService")
 public class MyUserDetailsServiceImpl implements UserDetailsService {
 
+    @Resource
+    private HttpServletRequest request;
+
     private final UserRepository userRepository;
+    private final LoginAttemptService loginAttemptService;
 
-
-    public MyUserDetailsServiceImpl(UserRepository userRepository) {
+    public MyUserDetailsServiceImpl(UserRepository userRepository, LoginAttemptService loginAttemptService) {
         super();
         this.userRepository = userRepository;
+        this.loginAttemptService = loginAttemptService;
     }
 
     // API
@@ -36,6 +42,10 @@ public class MyUserDetailsServiceImpl implements UserDetailsService {
     @Override
     public UserDetails loadUserByUsername(final String email) throws UsernameNotFoundException {
 
+        final String ip = getClientIP();
+        if (loginAttemptService.isBlocked(ip)) {
+            throw new RuntimeException("blocked");
+        }
 
         try {
             final Optional<User> userOptional = userRepository.findByEmail(email);
@@ -74,6 +84,14 @@ public class MyUserDetailsServiceImpl implements UserDetailsService {
             authorities.add(new SimpleGrantedAuthority(privilege));
         }
         return authorities;
+    }
+
+    private String getClientIP() {
+        final String xfHeader = request.getHeader("X-Forwarded-For");
+        if (xfHeader != null) {
+            return xfHeader.split(",")[0];
+        }
+        return request.getRemoteAddr();
     }
 
 
