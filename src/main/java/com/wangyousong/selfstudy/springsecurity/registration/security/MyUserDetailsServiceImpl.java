@@ -42,7 +42,7 @@ public class MyUserDetailsServiceImpl implements UserDetailsService {
     @Override
     public UserDetails loadUserByUsername(final String email) throws UsernameNotFoundException {
 
-        final String ip = getClientIP();
+        final String ip = getClientIp();
         if (loginAttemptService.isBlocked(ip)) {
             throw new RuntimeException("blocked");
         }
@@ -86,7 +86,7 @@ public class MyUserDetailsServiceImpl implements UserDetailsService {
         return authorities;
     }
 
-    private String getClientIP() {
+    private String getClientIp() {
         final String xfHeader = request.getHeader("X-Forwarded-For");
         if (xfHeader != null) {
             return xfHeader.split(",")[0];
