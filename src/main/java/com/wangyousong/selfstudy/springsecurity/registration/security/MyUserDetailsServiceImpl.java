@@ -53,7 +53,9 @@ public class MyUserDetailsServiceImpl implements UserDetailsService {
                 throw new UsernameNotFoundException("No user found with username: " + email);
             }
             User user = userOptional.get();
-            return new org.springframework.security.core.userdetails.User(user.getEmail(), user.getPassword(), user.isEnabled(), true, true, true, getAuthorities(user.getRoles()));
+            return new org.springframework.security.core.userdetails.User(user.getEmail(), user.getPassword(),
+                    user.isEnabled(), true, true, true,
+                    getAuthorities(user.getRoles()));
         } catch (final Exception e) {
             throw new RuntimeException(e);
         }
