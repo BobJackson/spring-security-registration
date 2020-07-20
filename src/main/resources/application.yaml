@@ -34,3 +34,13 @@ spring:
 
 support:
   email: hfuucmms@163.com
+
+
+logging:
+  level:
+    org:
+      springframework:
+        security:
+          web:
+            FilterChainProxy:
+              DEBUG
